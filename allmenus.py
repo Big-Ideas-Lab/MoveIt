@@ -10,6 +10,8 @@ import json
 # import numpy as np
 from geopy.geocoders import Nominatim
 
+import gensim
+
 
 # from nltk.corpus import wordnet as wn
 # >>> food = wn.synset('food.n.02')
@@ -60,12 +62,6 @@ set12 = set(google_api_search(query='restaurant|food|dining', radius=500).search
 set13 = set(google_api_search(query='restaurant|food|dining', radius=500).search_parse(36.057837,-78.929465))
 set14 = set(google_api_search(query='restaurant|food|dining', radius=500).search_parse(35.862324,-78.818222))
 
-
-# print(set1)
-# print(set2)
-# print(set3)
-# print(set4)
-
 # find the union of all the sets (a set will inherently get rid of multiples)
 source_list = set1 | set2 | set3 | set4 | set5 | set6 | set7 | set8 | set9 | set10 | set11 | set12 | set13 | set14
 print(source_list)
@@ -74,9 +70,6 @@ print(len(source_list))
 # split the geo_list into two separate arrays, one for purely names and one for locations
 names, locations = zip(*source_list)
 map_locations = dict(zip(names, locations))
-
-
-# print(names)
 
 # WEB SCRAPING
 
@@ -94,12 +87,10 @@ master_list = []
 
 # FINAL list of restaurants used found based on the intersection of master_list and names from above
 links_used = []
-
 locations_used = []
+names_used = []
 
 # the list of restaurants that overlap with google places, hard-coded currently WILL HAVE TO FIND MORE EFFICIENT METHOD
-allmenus_set = ['toast', 'nosh', 'mateo bar de tapas', 'nasher cafe', 'mellow mushroom', 'dos perros', 'pompieri pizza', 'smashburger', 'vin rouge', 'parizade']
-allmenus_set = set(allmenus_set)
 
 # used to traverse all the possibilities on allmenus and find out what matches google places results
 for link in all_possible_links:
@@ -117,6 +108,7 @@ for link in all_possible_links:
         if find in names:
             links_used.append(wanted_href)
             locations_used.append(map_locations.get(find))
+            names_used.append(find)
 
 # find the intersection of the lists
 master_list_set = set(master_list)
@@ -126,20 +118,16 @@ print(len(final_list))
 print(len(links_used))
 # print(links)
 
-# hard-coded list of locations based on findings from above
-# WANT MAP (will have to discuss how to obtain this in python)
-# locations_used = [(35.9967317, -78.9039702), (36.0072372, -78.9471945), (35.9967178, -78.9048009), (35.999044, -78.92904999999999), (35.991582, -78.905866),
-#                   (35.9956634, -78.89987289999999), (35.9958391, -78.8996128), (36.0091698, -78.9452682), (36.0106556, -78.9223415), (36.0080117, -78.9265703)]
-
 URL_base2 = "https://www.allmenus.com/nc/durham/"
-
-# used for testing before
-# ids = ["52181-meelo-restaurant/menu/", "51719-bamboo-house/menu/", "17694-604-at-west-village/menu/"]
 
 # where all the data is stored for the JSON
 restaurants = []
 
 chains = {"mcdonald's", "chipotle", "burger king", "arby's", "waffle house", "mellow mushroom", "taco bell", "hardee's", "pizza hut", "church's chicken", "wendy's", "cook out", "papa john's pizza"}
+
+#importing the model
+
+nlp_model = gensim.models.KeyedVectors.load_word2vec_format('/Users/christinalle/Desktop/GoogleNews-vectors-negative300.bin.gz', binary = True)
 
 for id, location_goog in zip(links_used, locations_used):
     URL = URL_base2 + id
@@ -147,6 +135,7 @@ for id, location_goog in zip(links_used, locations_used):
     bsObj = BeautifulSoup(r.content, 'html5lib')
 
     restaurant = bsObj.find("h1").get_text()
+    # restaurant = name
     if restaurant in chains:
         address = bsObj.find("a", attrs={'class': 'menu-address'})
         geolocator = Nominatim(user_agent="MoveIt")
@@ -170,12 +159,13 @@ for id, location_goog in zip(links_used, locations_used):
     menu = []
 
     # use regex to clean up the ingredients, will have to continue adding to this dictionary
-    remove = {' or': ',', ' and': ',', ' with': ',', 'With ': ',', "touch of ": '', 'own ': '',
-              'our ': '', 'Our ': '', '.': ''}
+    # remove = {' or': ',', ' and': ',', ' with': ',', 'With ': ',', "touch of ": '', 'own ': '',
+    #           'our ': '', 'Our ': '', '.': ''}
+    remove = {',': '', '.': '', ':':''}
     pattern = '|'.join(sorted(re.escape(k) for k in remove))
 
-    # [ \t]
     # cleaning/processing of ingredients by menu item
+    final_ingredient = []
     for item, price, ingredient in zip(titles, prices, ingredients):
         menu_item["item"] = item.get_text()
         stripped_price = price.get_text()
@@ -184,18 +174,21 @@ for id, location_goog in zip(links_used, locations_used):
         clean_ingredient = str(ingredient.get_text())
         # clean_ingredient = clean_ingredient.strip()
         # print(clean_ingredient)
-        clean_ingredient = re.sub(pattern, lambda m: remove.get(m.group(0).upper()), clean_ingredient,
-                                  flags=re.IGNORECASE)
-        current_ingredient = re.split("[\s,\&]", clean_ingredient)
 
-        # if there are no ingredients, put the menu item name as the default
-        # DISCUSS: cleaning methods
+        clean_ingredient = re.sub(pattern, lambda m: remove.get(m.group(0).upper()), clean_ingredient, flags=re.IGNORECASE)
+        current_ingredient = re.split("[\s,\&]", clean_ingredient)
 
         if len(current_ingredient) == 1:
             # current_ingredient = re.split("[,\&]", menu_item["item"])
             current_ingredient[0] = menu_item["item"]
-            menu_item["ingredient"] = current_ingredient
-        print(current_ingredient)
+
+        # FOR JOSHUA, IMPLEMENTING THE MODEL
+        for word in current_ingredient:
+            if nlp_model.similarity('edible', word) > .1 and nlp_model.similarity('food', word) > .15:
+                final_ingredient.append(word)
+
+        menu_item["ingredient"] = final_ingredient
+        # if there are no ingredients, put the menu item name as the default
 
         menu.append(menu_item.copy())
 
