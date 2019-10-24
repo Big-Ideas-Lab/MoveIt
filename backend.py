@@ -48,30 +48,34 @@ reshaped = concat.reshape(-1,300)
 tree = spatial.KDTree(reshaped)
 print("Tree built.")
 
+#-----------------------------------------------------------------------------------------------------
+    # Function to find the vector associated with the all possible combinations of the input string
+#-----------------------------------------------------------------------------------------------------
 def word2vec_func_(string):
-    word_array = string.split() # a list
-    comb_list = []
-    for i in range(len(word_array)):
-        comb_list.append(list(distinct_combinations(word_array,i+1))) # list of list of tuples
-    vector = {}
-    for word_list in comb_list: 
-        tup_to_list=[]
-        for tup in word_list:
-            tup_to_list.append(list(tup))        
-        for lst in tup_to_list:
-            new_string=''
-            tot_word_vector = np.zeros(300)   
-            curr_word_vector = np.zeros(300)
-            if len(lst)>1:
+    word_array = string.split() # split the input string into an array or the individual words
+    comb_list = [] # initialize the list of word combinations
+    for i in range(len(word_array)): # for i = 0 --> number of words in the word_array
+        # add to the list of combinations all combinations of i words in word_array; results in a list of list of tuples, where each inner list includes all the combinations of i words [[(a,b),(c,d)],[(e,f,g),(h,i,j)],[(k,l,m,n),(o,p,q,r)],...]
+        comb_list.append(list(distinct_combinations(word_array,i+1))) 
+    vector = {} # initialize vector dictionary {string: vector, string: vector}
+    for word_list in comb_list: # for each list within comb_list
+        tup_to_list=[]  
+        for tup in word_list: # for each tuple in the word_list
+            tup_to_list.append(list(tup)) # make the tuple a list; this is necessary because later operations require lists instead of tuples    
+        for lst in tup_to_list: # for each list in tup_to_list (each list represents a combination of words)
+            new_string='' # words from lst are concatanated one by one, forming one string
+            tot_word_vector = np.zeros(300) # vector associated with new_string 
+            curr_word_vector = np.zeros(300) # vector associated with current word in lst (see below)
+            if len(lst)>1: # if there is more than one word in lst
                 for word in lst:                    
-                    curr_word_vector = nlp_model.get_vector(word)
-                    tot_word_vector += curr_word_vector
-                    if new_string == '':
+                    curr_word_vector = nlp_model.get_vector(word) # find vector assoc with the word
+                    tot_word_vector += curr_word_vector # add the curr_word_vector to tot_word_vector
+                    if new_string == '': # if this is the first word, make the new_string the current word
                         new_string = word
-                    else :
-                        new_string = new_string+" "+word
-                vector[new_string]=tot_word_vector
-            elif len(lst)==1:
+                    else : # if this isn't the first word
+                        new_string = new_string+" "+word # add the new word to the new_string
+                vector[new_string]=tot_word_vector # add new_string key and associate vector value to vector dictionary
+            elif len(lst)==1: # if there is only one word in lst
                 curr_word_vector += nlp_model.get_vector(lst[0])
                 vector[lst[0]]=curr_word_vector
     return vector
@@ -270,27 +274,25 @@ def collect_durham(rad,lat,long):
 
 #Function to search ingredients in tree and find closest one in dataframe
 #---------------------------------------------------------------------------------------------
-def closest_food_vector(string):
-    nearest_dist= {}
-    nearest_ind = {}
-    vector_dict = word2vec_func_(string)
-    for key in vector_dict:
-        nearest_dist[key], nearest_ind[key] = tree.query(vector_dict[key], k=1)    
-    dist={}
-    if nearest_dist[string] != 0.0: 
-        for key in vector_dict:
+# Function to find the closest vector associated with the input string if no direct match                            
+def closest_food(string):
+    vector_dict = word2vec_func_(string) # call function that returns dictionary of all combinations of string and associated vectors
+    nearest_dist,nearest_ind=tree.query(vector_dict[string],k=1) # nearest_dist = how far the closest vector is to the string's vector; nearest_ind = where the record is on csv
+    dist={} # dictionary to hold distances from the string's vector for each combination of words
+    if nearest_dist[string] != 0.0: # if the tree query doesn't find exact match
+        for key in vector_dict: # for each combination of words, calculate distance of its vector from the string's vector
             dist[key] = distance.euclidean(vector_dict[key],vector_dict[string])
-        dist.pop(string)
-        closest_food = min(dist, key=dist.get)
-        closest_food_vector = vector_dict[closest_food]
-    else:
+        dist.pop(string) # remove string from dictionary to find the min distance
+        closest_food = min(dist, key=dist.get) # get the combination of words with the closest vector to the string
+        closest_food_vector = vector_dict[closest_food] # get the associated closest vector
+    else: # if the tree finds an exact match, the closest food is simply the input string
         closest_food = string
         closest_food_vector = vector_dict[string]
     return closest_food, closest_food_vector
 
 def nutri_search(string,df): # string is the ingredient
 
-    closest_food, closest_food_vector = closest_food_vector(string)
+    closest_food, closest_food_vector = closest_food(string)
 # =============================================================================
 #     nutrients = ['nf_calories',
 #      'nf_cholesterol',
