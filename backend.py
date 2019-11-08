@@ -48,6 +48,7 @@ reshaped = concat.reshape(-1,300)
 tree = spatial.KDTree(reshaped)
 print("Tree built.")
 
+
 #-----------------------------------------------------------------------------------------------------
     # Function to find the vector associated with the all possible combinations of the input string
 #-----------------------------------------------------------------------------------------------------
@@ -274,7 +275,10 @@ def collect_durham(rad,lat,long):
 
 #Function to search ingredients in tree and find closest one in dataframe
 #---------------------------------------------------------------------------------------------
-# Function to find the closest vector associated with the input string if no direct match                            
+# Function to find the closest vector associated with the input string if no direct match          
+# THIS IS CURRENTLY FINDING THE CLOSEST COMBINATION OF WORDS FROM STRING AND THEN FEEDING INTO TREE QUERY, BUT WE NEED 
+# TO MAKE SURE THAT THE NEXT CLOSEST WORD IS ALSO IN THE TREE --> IF IT IS, NEED TO COMPARE DISTANCE WITH WHAT QUERY
+# SAYS IS NEXT CLOSEST WORD AND SEE WHAT'S CLOSER; IF NOT, NEED TO GET MIN(DIST.POP(WORD)) AND REPEAT
 def closest_food(string):
     vector_dict = word2vec_func_(string) # call function that returns dictionary of all combinations of string and associated vectors
     nearest_dist,nearest_ind=tree.query(vector_dict[string],k=1) # nearest_dist = how far the closest vector is to the string's vector; nearest_ind = where the record is on csv
@@ -365,16 +369,16 @@ def nutri_search(string,df): # string is the ingredient
         potass = row['nf_potassium']
     except:
         potass = 0
-    try:
-        vd = 0
-    except:
-        vd = 0
+#    try:
+#        vd = 0
+#    except:
+#        vd = 0
     try:
         calcium = row['nf_calcium_dv']
     except:
         calcium = 0
 
-    nutri_dict={'cal':cal,'sugars':sugars,'totfat':totfat,'unsatfat':unsatfat,'satfat':satfat, 'carbs':carbs,'protein':protein,'fiber':fiber,'sod':sod,'mag':mag,'potass':potass,'vd':vd,'calcium':calcium} #'totfolate':folate,transfat':transfat,
+    nutri_dict={'cal':cal,'sugars':sugars,'totfat':totfat,'unsatfat':unsatfat,'satfat':satfat, 'carbs':carbs,'protein':protein,'fiber':fiber,'sod':sod,'mag':mag,'potass':potass,'calcium':calcium} #'totfolate':folate,transfat':transfat, vd
 
     return nutri_dict
 
@@ -396,7 +400,7 @@ def weight(recDict):
     'mag': (2,1),
     'totfolate': (2,1),
     'potass': (2,1),
-    'vd': (2,1),
+    #'vd': (2,1),
     'calcium':(3,1)
     }
     weight_adequacy = {} #{'nutrient': weight_value, etc}
@@ -420,11 +424,21 @@ def single_dictionary(menu_item):
             continue
     return menu_item
 
+# create dictionary single dictionary for a food item in foods.csv
+def food_db_dictionary(index):
+    food_dictionary={}
+    record = df.iloc[index]
+    food_name = record['food_name']
+    food_dictionary['menu item']=food_name
+    food_dictionary['ingredients']=food_name
+    food_dictionary['nutrition']={}
+    food_dictionary['nutrition'][food_name] = {'cal':record['nf_calories'],'sugars':record['nf_sugars'],'totfat':record['nf_total_fat'],'unsatfat':record['nf_total_fat']-record['nf_saturated_fat'],'satfat':record['nf_saturated_fat'], 'carbs':record['nf_total_carbohydrate'],'protein':record['nf_protein'],'fiber':record['nf_dietary_fiber'],'sod':record['nf_sodium'],'mag':record['nf_mg'],'potass':record['nf_p'],'calcium':record['nf_calcium_dv']}
+    return food_dictionary
 #Score menu item
 #---------------------------------------------------------------------------------------------
 def nutrientScore(nutrition_info, recommended_dict_i):
     recDict = recommended_dict_i
-    nutrient_sum_dict={'cal':0,'sugars':0,'totfat':0,'unsatfat':0,'satfat':0,'carbs':0,'protein':0,'fiber':0,'sod':0,'mag':0,'potass':0,'vd':0,'calcium':0} #'transfat':0,'totfolate':0,
+    nutrient_sum_dict={'cal':0,'sugars':0,'totfat':0,'unsatfat':0,'satfat':0,'carbs':0,'protein':0,'fiber':0,'sod':0,'mag':0,'potass':0,'calcium':0} #'transfat':0,'totfolate':0,
     nutrient_fracs={}
     for ingredient_key in nutrition_info:
         nutrition_dict_for_ingredient = nutrition_info[ingredient_key]
@@ -533,7 +547,7 @@ def recommended_dict(gender, activity, age):
             elif age >= 76:
                 cals = 2400;percent_totfat = .27;protein = 56;fiber = 28
 
-        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'unsattfat':.6*percent_totfat*cals/3,'satfat':.06*cals/3,'carbs':130/3,'protein':protein/3,'fiber':fiber/3,'sod':2300/3,'mag':420/3,'potass':4700/3,'vd':600/3,'calcium':1250/3} #'totfolate':400/3,'transfat':.01*cals/3,
+        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'unsattfat':.6*percent_totfat*cals/3,'satfat':.06*cals/3,'carbs':130/3,'protein':protein/3,'fiber':fiber/3,'sod':2300/3,'mag':420/3,'potass':4700/3,'calcium':1250/3} #'totfolate':400/3,'transfat':.01*cals/3,
 
     elif gender == 1:
         if activity == 0:
@@ -580,10 +594,10 @@ def recommended_dict(gender, activity, age):
             elif age>60:
                 cals = 2000;percent_totfat = .27;fiber = 22.4
 
-        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'unsatfat':.6*percent_totfat*cals/3,'satfat':.06*cals/3,'carbs':130/3,'protein':46/3,'fiber':fiber/3,'sod':2300/3,'mag':320/3,'potass':4700/3,'vd':600/3,'calcium':1250/3} #'transfat':.01*cals/3,'totfolate':400/3,
+        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'unsatfat':.6*percent_totfat*cals/3,'satfat':.06*cals/3,'carbs':130/3,'protein':46/3,'fiber':fiber/3,'sod':2300/3,'mag':320/3,'potass':4700/3,'calcium':1250/3} #'transfat':.01*cals/3,'totfolate':400/3,'vd':600/3,
 
     else:
-        recommended_dict = {'cal':2400/3,'sugars':.09*2400/3,'totfat': .27*2400/3,'unsatfat':.6*.27*2400/3,'satfat':.06*2400/3,'carbs':130/3,'protein':46/3,'fiber':25.2/3,'sod':2300/3,'mag':320/3,'potass':4700/3,'vd':600/3,'calcium':1250/3} #'totfolate':400/3,'transfat':.01*2400/3,
+        recommended_dict = {'cal':2400/3,'sugars':.09*2400/3,'totfat': .27*2400/3,'unsatfat':.6*.27*2400/3,'satfat':.06*2400/3,'carbs':130/3,'protein':46/3,'fiber':25.2/3,'sod':2300/3,'mag':320/3,'potass':4700/3,'calcium':1250/3} #'totfolate':400/3,'transfat':.01*2400/3,'vd':600/3,
     return recommended_dict
 
 #---------------------------------------------------------------------------------------------
@@ -610,7 +624,7 @@ def score_local_meals_per_user(radius,lat,long,gender,activity,age):
             if counter == 5:
                 print("Nutritional information obtained from {}.".format(restaurant['Name']))
                 break
-
+            
     for restaurant in restaurants:
         menu = restaurant['Menu']
         counter = 0
@@ -619,6 +633,15 @@ def score_local_meals_per_user(radius,lat,long,gender,activity,age):
                 print('Restaurant: {} ({})\nItem: {}\nScore: {}'.format(restaurant['Name'],restaurant['Location'],item['item'], item['Score']))
             except:
                 continue
-
+# Applying the scoring to all inputs in the foods.csv database 
+def score_food_database(df,gender,activity,age): 
+    rec_dict = recommended_dict(gender, activity, age)
+    # make nutrition dictionary for all records in df so that it's compatible for nutrientScore()
+    df['nutrition dictionary']=df.apply(lambda x: food_db_dictionary(x['id']-1), axis=1)
+    # fill all NaN entries with 0 to avoid issues with scoring
+    df = df.fillna(0)
+    # make score column
+    df['score']=df.apply(lambda x: nutrientScore(x['nutrition dictionary']['nutrition'], rec_dict),axis=1) 
+    return df
 if __name__ == "__main__":
     score_local_meals_per_user(sys.argv[1],sys.argv[2],sys.argv[3],int(sys.argv[4]),int(sys.argv[5]),int(sys.argv[6]))
