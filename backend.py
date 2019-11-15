@@ -276,27 +276,42 @@ def collect_durham(rad,lat,long):
 #Function to search ingredients in tree and find closest one in dataframe
 #---------------------------------------------------------------------------------------------
 # Function to find the closest vector associated with the input string if no direct match          
-# THIS IS CURRENTLY FINDING THE CLOSEST COMBINATION OF WORDS FROM STRING AND THEN FEEDING INTO TREE QUERY, BUT WE NEED 
-# TO MAKE SURE THAT THE NEXT CLOSEST WORD IS ALSO IN THE TREE --> IF IT IS, NEED TO COMPARE DISTANCE WITH WHAT QUERY
-# SAYS IS NEXT CLOSEST WORD AND SEE WHAT'S CLOSER; IF NOT, NEED TO GET MIN(DIST.POP(WORD)) AND REPEAT
-def closest_food(string):
+
+def closest_food(string,df):
     vector_dict = word2vec_func_(string) # call function that returns dictionary of all combinations of string and associated vectors
-    nearest_dist,nearest_ind=tree.query(vector_dict[string],k=1) # nearest_dist = how far the closest vector is to the string's vector; nearest_ind = where the record is on csv
+    nearest_dist,nearest_ind=tree.query(vector_dict[string]) # nearest_dist = how far the closest vector is to the string's vector; nearest_ind = where the record is on csv
     dist={} # dictionary to hold distances from the string's vector for each combination of words
-    if nearest_dist[string] != 0.0: # if the tree query doesn't find exact match
-        for key in vector_dict: # for each combination of words, calculate distance of its vector from the string's vector
-            dist[key] = distance.euclidean(vector_dict[key],vector_dict[string])
-        dist.pop(string) # remove string from dictionary to find the min distance
-        closest_food = min(dist, key=dist.get) # get the combination of words with the closest vector to the string
-        closest_food_vector = vector_dict[closest_food] # get the associated closest vector
-    else: # if the tree finds an exact match, the closest food is simply the input string
+    loop_string = string
+    for key in vector_dict: # for each combination of words, calculate distance of its vector from the string's vector
+            dist[key] = distance.euclidean(vector_dict[key],vector_dict[string]) # using euclidean because that is what the tree.query uses!!
+    dist_copy=dist.copy()
+    if nearest_dist == 0.0 : 
         closest_food = string
-        closest_food_vector = vector_dict[string]
-    return closest_food, closest_food_vector
+        closest_food_vector = vector_dict[closest_food]
+        closest_food_row = df.iloc[tree.query(closest_food_vector)[1]]
+    # this while finds the combination string that is closest to the OG string AND is in the database
+    else:
+        while tree.query(vector_dict[loop_string])[0] != 0.0: # if the tree query doesn't find exact match in database       
+            print('{} was not in database'.format(loop_string))
+            dist_copy.pop(loop_string) # remove string from dictionary to find the min distance
+            if not dist_copy:
+                print('No direct database matches')
+                closest_food = ''
+                break 
+            closest_food = min(dist_copy, key=dist_copy.get) # get the combination of words with the closest vector to the string
+            closest_food_vector = vector_dict[closest_food] # get the associated closest vector 
+            loop_string = closest_food
+        print('{} was in database!'.format(loop_string))
+        if closest_food == '' or distance.euclidean(closest_food_vector,vector_dict[string]) > nearest_dist: # if closest_food is empty or if distance from closest_food to OG string > nearest_dist[string]
+            closest_food_row = df.iloc[nearest_ind] # the closest food option's row is from the first tree query result
+        else : 
+            closest_food_row = df.iloc[tree.query(closest_food_vector)[1]] # closest food option's row is found by querying the vector result of while loop
+          
+    return closest_food_row
 
-def nutri_search(string,df): # string is the ingredient
+def nutri_search(string): # string is the ingredient
 
-    closest_food, closest_food_vector = closest_food(string)
+    row = closest_food(string)
 # =============================================================================
 #     nutrients = ['nf_calories',
 #      'nf_cholesterol',
@@ -313,10 +328,6 @@ def nutri_search(string,df): # string is the ingredient
 #      'nf_calcium_dv',
 #      'nf_mg']
 # =============================================================================
-    nearest_dist, nearest_ind = tree.query(closest_food_vector)  
-
-    row = df.iloc[nearest_ind]
-
     try:
         cal = row['nf_calories']
     except:
@@ -603,7 +614,6 @@ def recommended_dict(gender, activity, age):
 #---------------------------------------------------------------------------------------------
             #PART 3: Putting it all together, currently only taking 5 menu items each
 #---------------------------------------------------------------------------------------------
-
 
 def score_local_meals_per_user(radius,lat,long,gender,activity,age):
     #Collect options in the area.
