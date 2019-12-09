@@ -23,7 +23,6 @@ print("Loading NLP Model...")
 nlp_model = gensim.models.KeyedVectors.load_word2vec_format('/Users/christinalle/Desktop/GoogleNews-vectors-negative300.bin.gz', binary = True)
 print("NLP Model Loaded")
 
-
 #function to read nutritional database csv, word2vec for each item, convert vectors to searchable tree
 #---------------------------------------------------------------------------------------------
 def word2vec_func(string):
@@ -36,21 +35,11 @@ def word2vec_func(string):
             continue
     return single_vector
 
-
-# print("Building Tree...")
-# df = pd.read_csv('/Users/joshuadarcy/Desktop/foods.csv')
-# df['vector'] = df.apply(lambda x: word2vec_func(x['food_name']),axis=1)
-# nump_array = np.array(df['vector'])
-# concat = np.concatenate(nump_array)
-# reshaped = concat.reshape(-1,300)
-# tree = spatial.KDTree(reshaped)
-# print("Tree built.")
+KEY = 'insert_keys'
 
 #---------------------------------------------------------------------------------------------
      #PART 1: Find local restaurants, compare to AllMenus.com, construct food dataset
 #---------------------------------------------------------------------------------------------
-
-
 
 #setup Google search API, default type = 'restaurant' but can use other queries
 #---------------------------------------------------------------------------------------------
@@ -79,7 +68,7 @@ class google_api_search(object):
     def __init__(self, query='restaurant', radius=1000):
         # set parameters
         self.radius = radius
-        self.api_key = 'AIzaSyDzs7Yezb7ZUCCajqPY0yjRR4LBUkA2Ugw'
+        self.api_key = KEY
         self.query = query
         # run search parse and create an instance variable called geo_list that you can reference
         # self.geo_list = self.search_parse(35.9940, -78.8986)
@@ -263,6 +252,7 @@ def run_rtp():
     # print(final_dict)
     with open('rtp.json', 'w') as json_file:
         json.dump(final_dict, json_file)
+
 
 if __name__ == "__main__":
     run_rtp()
