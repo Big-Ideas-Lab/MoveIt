@@ -52,59 +52,55 @@ print("Tree built.")
 
 #Needs to be updated with V2. 
 
-def nutri_search(string,df):
-    word_array = string.split()
-    single_vector = np.zeros(300)
+def nutri_search(string): # string is the ingredient
 
-    for word in word_array:
-        try:
-            single_vector += nlp_model.get_vector(word)
-        except:
-            continue
-    nutrients = ['nf_calories',
-     'nf_cholesterol',
-     'nf_dietary_fiber',
-     'nf_p',
-     'nf_potassium',
-     'nf_protein',
-     'nf_saturated_fat',
-     'nf_sodium',
-     'nf_sugars',
-     'nf_total_carbohydrate',
-     'nf_total_fat',
-     'nf_total_saturated_fat',
-     'nf_calcium_dv',
-     'nf_mg']
-
-    metric, location = tree.query(single_vector)
-    row = df.iloc[location]
-
+    row = closest_food(string)
+# =============================================================================
+#     nutrients = ['nf_calories',
+#      'nf_cholesterol',
+#      'nf_dietary_fiber',
+#      'nf_p',
+#      'nf_potassium',
+#      'nf_protein',
+#      'nf_saturated_fat',
+#      'nf_sodium',
+#      'nf_sugars',
+#      'nf_total_carbohydrate',
+#      'nf_total_fat',
+#      'nf_total_saturated_fat',
+#      'nf_calcium_dv',
+#      'nf_mg']
+# =============================================================================
     try:
         cal = row['nf_calories']
     except:
         cal = 0
     try:
-        sugars = row['nf_sugars']
+        sugars = 4*row['nf_sugars']
     except:
         sugars = 0
     try:
-        totfat = row['nf_total_fat']
+        totfat = 9*row['nf_total_fat']
     except:
         totfat = 0
+#    try:
+#        unsatfat = row['nf_total_fat'] - row['nf_saturated_fat']
+#    except:
+#        unsatfat = 0
     try:
-        unsatfat = row['nf_total_fat'] - row['nf_saturated_fat']
-    except:
-        unsatfat = 0
-    try:
-        satfat = row['nf_saturated_fat']
+        satfat = 9*row['nf_saturated_fat']
     except:
         satfat = 0
+    # try:
+    #     transfat = 0 # need to fix this/elim
+    # except:
+    #     transfat = 0
     try:
-        transfat = row['nf_total_fat'] - row['nf_saturated_fat']
+        chol = row['nf_cholesterol']
     except:
-        transfat = 0
+        chol = 0
     try:
-        carbs = row['nf_total_carbohydrate']
+        carbs = 4*row['nf_total_carbohydrate']
     except:
         carbs = 0
     try:
@@ -123,20 +119,24 @@ def nutri_search(string,df):
         mag = row['nf_mg']
     except:
         mag = 0
-    try:
-        folate = 0
-    except:
-        folate = 0
+    # try:
+    #     folate = 0
+    # except:
+    #     folate = 0
     try:
         potass = row['nf_potassium']
     except:
         potass = 0
+#    try:
+#        vd = 0
+#    except:
+#        vd = 0
     try:
-        vd = 0
+        calcium = row['nf_calcium_dv']
     except:
-        vd = 0
+        calcium = 0
 
-    nutri_dict={'cal':cal,'sugars':sugars,'totfat':totfat,'unsatfat':unsatfat,'satfat':satfat,'transfat':transfat,'carbs':carbs,'protein':protein,'fiber':fiber,'sod':sod,'mag':mag,'totfolate':folate,'potass':potass,'vd':vd}
+    nutri_dict={'cal':cal,'sugars':sugars,'totfat':totfat,'satfat':satfat, 'chol':chol, 'carbs':carbs,'protein':protein,'fiber':fiber,'sod':sod,'mag':mag,'potass':potass,'calcium':calcium} 
 
     return nutri_dict
 
