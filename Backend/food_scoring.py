@@ -74,17 +74,17 @@ def recommended_dict(gender, activity, age):
             if  age >=16 and age <=18:
                 cals = 2400;percent_totfat = .3;protein = 52;fiber = 30.8
             elif age >=19 and age <=20:
-                cals = 2600;percent_totfat = .275;protein = 56;fiber = 33.6
+                cals = 2600;percent_totfat = .27;protein = 56;fiber = 33.6
             elif age >=21 and age <=30:
-                cals = 2400;percent_totfat = .275;protein = 56;fiber = 33.6
+                cals = 2400;percent_totfat = .27;protein = 56;fiber = 33.6
             elif  age >=31 and age <=40:
-                cals = 2400;protein = 56;percent_totfat = .275;fiber = 30.8
+                cals = 2400;protein = 56;percent_totfat = .27;fiber = 30.8
             elif  age >=41 and age <=50:
-                cals = 2200;percent_totfat = .275;protein = 56;fiber = 30.8
+                cals = 2200;percent_totfat = .27;protein = 56;fiber = 30.8
             elif  age >=51 and age <=60:
-                cals = 2200;percent_totfat = .275;protein = 56;fiber = 28
+                cals = 2200;percent_totfat = .27;protein = 56;fiber = 28
             elif  age >=61:
-                cals = 2000;percent_totfat = .275;protein = 56;fiber = 28
+                cals = 2000;percent_totfat = .27;protein = 56;fiber = 28
         elif activity == 1:
             if  age >=16 and age <=25:
                 cals = 2800;percent_totfat = .3;protein = 52
@@ -93,71 +93,71 @@ def recommended_dict(gender, activity, age):
                 elif age >=19 and age <= 25:
                     fiber = 33.6
             elif age >=26 and age <=45:
-                cals = 2600;percent_totfat = .275;protein = 56
+                cals = 2600;percent_totfat = .27;protein = 56
                 if age >= 26 and age <=30:
                     fiber = 33.6
                 elif age >= 31 and age <= 45:
                     fiber = 30.8
             elif age >=46 and age <= 65:
-                cals = 2400;percent_totfat = .275;protein = 56
+                cals = 2400;percent_totfat = .27;protein = 56
                 if age >= 46 and age <= 50:
                     fiber = 30.8
                 elif age >=51:
                     fiber = 28
             elif age >=66:
-                cals = 2200;percent_totfat = .275;protein = 56
+                cals = 2200;percent_totfat = .27;protein = 56; fiber=28
         elif activity == 2:
             if  age >=16 and age <=18:
                 cals = 3200;percent_totfat = .3;protein = 52;fiber = 30.8
             elif  age >=19 and age <=35:
-                cals = 3000;percent_totfat = .275;protein = 56
+                cals = 3000;percent_totfat = .27;protein = 56
                 if age >= 19 and age <= 30:
                     fiber = 33.6
                 elif age >= 31 and age >= 35:
                     fiber = 30.8
             elif  age >=36 and age <=55:
-                cals = 2800;percent_totfat = .275;protein = 56
+                cals = 2800;percent_totfat = .27;protein = 56
                 if age >= 36 and age <= 50:
                     fiber = 30.8
                 elif age >=51 and age <= 55:
                     fiber = 28
             elif  age >=56 and age <=75:
-                cals = 2600;percent_totfat = .275;protein = 56;fiber = 28
+                cals = 2600;percent_totfat = .27;protein = 56;fiber = 28
             elif age >= 76:
-                cals = 2400;percent_totfat = .275;protein = 56;fiber = 28
+                cals = 2400;percent_totfat = .27;protein = 56;fiber = 28
 
-        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'unsattfat':.6*percent_totfat*cals/3,'satfat':.09*cals/3,'transfat':.01*cals/3,'carbs':130/3,'protein':56/3,'fiber':fiber/3,'sod':2300/3,'mag':420/3,'totfolate':400/3,'potass':4700/3,'vd':600/3}
+        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'satfat':.06*cals/3, 'chol':150/3,'carbs':.55*cals/3,'protein':protein/3,'fiber':fiber/3,'sod':2300/3,'mag':420/3,'potass':4700/3,'calcium':1250/3} #'totfolate':400/3,'transfat':.01*cals/3,
 
     elif gender == 1:
         if activity == 0:
             if age >=16 and age <=18:
                 cals = 1800;percent_totfat = .3;fiber = 25.2
             elif  age >=19 and age <=25:
-                cals = 2000;percent_totfat = .275;fiber = 28
+                cals = 2000;percent_totfat = .27;fiber = 28
             elif  age >=26 and age <=50:
-                cals = 1800;percent_totfat = .275
+                cals = 1800;percent_totfat = .27
                 if age >= 26 and age <=30:
                     fiber = 28
                 elif age >30 and age <=50:
                     fiber = 25.2
             elif  age >=51:
-                cals = 1600;percent_totfat = .275;fiber = 22.4
+                cals = 1600;percent_totfat = .27;fiber = 22.4
         elif activity == 1:
             if age >=16 and age <=18:
                 cals = 2000;percent_totfat = .3;fiber = 25.2
             elif  age >=19 and age <=25:
-                cals = 2500;percent_totfat = .275;fiber = 28
+                cals = 2200;percent_totfat = .27;fiber = 28
             elif  age >=26 and age <=50:
-                cals = 2000;percent_totfat = .275
+                cals = 2000;percent_totfat = .27
                 if age >= 26 and age <=30:
                     fiber = 28
                 elif age >30 and age <=50:
                     fiber = 25.2
             elif  age >=51:
-                cals = 1800;percent_totfat = .275;fiber = 22.4
+                cals = 1800;percent_totfat = .27;fiber = 22.4
         elif activity == 2:
             if age >=16 and age <=30:
-                cals = 2400;percent_totfat = .275
+                cals = 2400;percent_totfat = .27
                 if age >=16 and age <=18:
                     fiber = 25.2
                 elif age >18 and age <=25:
@@ -165,18 +165,18 @@ def recommended_dict(gender, activity, age):
                 elif age >= 26 and age <=30:
                     fiber = 28
             elif age >30 and age <=60:
-                cals = 2200;percent_totfat = .275
+                cals = 2200;percent_totfat = .27
                 if age >30 and age <=50:
                     fiber = 25.2
                 elif age> 50:
                     fiber = 22.4
             elif age>60:
-                cals = 2000;percent_totfat = .275;fiber = 22.4
+                cals = 2000;percent_totfat = .27;fiber = 22.4
 
-        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'unsatfat':.6*percent_totfat*cals/3,'satfat':.09*cals/3,'transfat':.01*cals/3,'carbs':130/3,'protein':46/3,'fiber':fiber/3,'sod':2300/3,'mag':320/3,'totfolate':400/3,'potass':4700/3,'vd':600/3}
+        recommended_dict = {'cal':cals/3,'sugars':.09*cals/3,'totfat': percent_totfat*cals/3,'satfat':.06*cals/3,'chol':150/3,'carbs':.55*cals/3,'protein':46/3,'fiber':fiber/3,'sod':2300/3,'mag':320/3,'potass':4700/3,'calcium':1250/3} #'transfat':.01*cals/3,'totfolate':400/3,'vd':600/3,
 
     else:
-        recommended_dict = {'cal':2400/3,'sugars':.09*2400/3,'totfat': .275*2400/3,'unsatfat':.6*.275*2400/3,'satfat':.09*2400/3,'transfat':.01*2400/3,'carbs':130/3,'protein':46/3,'fiber':25.2/3,'sod':2300/3,'mag':320/3,'totfolate':400/3,'potass':4700/3,'vd':600/3}
+        recommended_dict = {'cal':2400/3,'sugars':.09*2400/3,'totfat': .27*2400/3,'satfat':.06*2400/3,'chol':150/3,'carbs':.55*cals/3,'protein':46/3,'fiber':25.2/3,'sod':2300/3,'mag':320/3,'potass':4700/3,'calcium':1250/3} #'totfolate':400/3,'transfat':.01*2400/3,'vd':600/3,
     return recommended_dict
 
 
